@@ -30,6 +30,10 @@ public interface Time {
 
     float getGameTimeDilation();
 
+    float getDelta();
+
+    long getDeltaInMs();
+
     /**
      * @return The current framerate
      */

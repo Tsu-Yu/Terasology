@@ -28,12 +28,19 @@ public class LocalPlayer {
     private EntityRef clientEntity = EntityRef.NULL;
     private int nextActivationId;
 
+    // NEW injected dependency
+    private Physics physics;
     //Record and Replay classes
     private DirectionAndOriginPosRecorderList directionAndOriginPosRecorderList;
     private RecordAndReplayCurrentStatus recordAndReplayCurrentStatus;
 
     public LocalPlayer() {
 
+    }
+
+    // NEW Setter for dependency injection
+    public void setPhysics(Physics physics) {
+        this.physics = physics;
     }
 
     // TODO: As per Immortius answer in Pull Request #1088,
@@ -162,6 +169,29 @@ public class LocalPlayer {
         return dest.set(movement.getVelocity());
     }
 
+    /**
+     * NEW TESTABLE METHOD
+     * Extracted ray trace logic so it can be unit tested.
+     */
+    boolean performRayTrace(Vector3f origin,
+                            Vector3f direction,
+                            float range,
+                            EntityRef character) {
+
+        Physics physicsToUse = (physics != null)
+                ? physics
+                : CoreRegistry.get(Physics.class);
+
+        HitResult result = physicsToUse.rayTrace(
+                origin,
+                direction,
+                range,
+                Sets.newHashSet(character),
+                CharacterSystem.DEFAULTPHYSICSFILTER
+        );
+
+        return result.isHit();
+    }
 
     /**
      * Can be used by modules to trigger the activation of a player owned entity like an item.
@@ -220,9 +250,17 @@ public class LocalPlayer {
             interactionRange = characterComponent.interactionRange;
         }
 
+        // NEW testable method
+        boolean eventWithTarget =
+                performRayTrace(originPos, direction, interactionRange, character);
+
+        // Full HitResult for event data
+        Physics physicsToUse = (physics != null)
+                ? physics
+                : CoreRegistry.get(Physics.class);
+
         HitResult result = physics.rayTrace(originPos, direction, interactionRange,
                 Sets.newHashSet(character), CharacterSystem.DEFAULTPHYSICSFILTER);
-        boolean eventWithTarget = result.isHit();
 
         if (ownedEntityUsage || eventWithTarget) {
             EntityRef activatedObject = usedOwnedEntity.exists() ? usedOwnedEntity : result.getEntity();
