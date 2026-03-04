@@ -14,4 +14,14 @@ public final class TimeLwjgl extends TimeBase {
     public long getRawTimeInMs() {
         return (long) (GLFW.glfwGetTime() * 1000);
     }
+
+    @Override
+    public float getDelta() {
+        return 0;
+    }
+
+    @Override
+    public long getDeltaInMs() {
+        return 0;
+    }
 }

@@ -14,4 +14,14 @@ public final class TimeSystem extends TimeBase {
     public long getRawTimeInMs() {
         return System.nanoTime() / 1000000;
     }
+
+    @Override
+    public float getDelta() {
+        return 0;
+    }
+
+    @Override
+    public long getDeltaInMs() {
+        return 0;
+    }
 }
